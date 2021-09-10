@@ -1,3 +1,4 @@
 click
 git+https://github.com/altaris/noisy-moo
+joblib
 pymoo

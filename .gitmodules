@@ -1,0 +1,4 @@
+[submodule "submodules/controllerTesting"]
+	path = submodules/controllerTesting
+	url = git@github.com:ERATOMMSD/controllerTesting.git
+	ignore = dirty
