@@ -36,7 +36,7 @@ def run_problem(problem_name: str, problem: Problem, noise: float, total_evaluat
     out_dir = f"./output/{problem_name}_Noise{noise}"
     pareto_front = problem.pareto_front()
 
-    wrapped_problem = nmoo.WrappedProblem("WrappedProblem", problem)
+    wrapped_problem = nmoo.WrappedProblem(problem)
 
     # TODO: Implement noise
     noise_dict = {"F": (np.zeros(problem.n_obj), np.eye(problem.n_obj) * noise)}
@@ -72,7 +72,10 @@ def run_problem(problem_name: str, problem: Problem, noise: float, total_evaluat
                             n_last=30,
                             n_max_gen=4000,
                             n_max_evals=400000
-                        )
+                        ),
+        "minimize_kwargs": {
+            "evaluator": Resampling_Fix_NEval_Evaluator(),
+        }
     } for gs in gensizes}
 
     # JMetal does HyperParam search
@@ -93,7 +96,7 @@ def run_problem(problem_name: str, problem: Problem, noise: float, total_evaluat
         n_runs=3,
     )
 
-    results = benchmark.run(verbose=-1, n_jobs=4, dump_results=False, evaluator=Resampling_Fix_NEval_Evaluator)
+    results = benchmark.run(verbose=-1, n_jobs=4)
     benchmark.final_results().to_csv(out_dir+"/n_gen_check.csv")
     print(problem_name)
     print(benchmark.final_results())
