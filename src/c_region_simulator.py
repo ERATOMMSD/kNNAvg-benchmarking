@@ -5,6 +5,7 @@ CRegionSimulator call wrapped in a pymoo.Problem
 import subprocess
 from pathlib import Path
 from typing import Any, Union
+from joblib import delayed, Parallel
 
 import numpy as np
 from pymoo.model.problem import Problem
@@ -14,6 +15,7 @@ class CRegionSimulator(Problem):
 
     _c_region_simulator_path: str
     _n_dimensions: int
+    _n_joblib_jobs: int
 
     _cA1_min: np.ndarray
     _cA1_max: np.ndarray
@@ -70,14 +72,16 @@ class CRegionSimulator(Problem):
                 return "1" if v else "0"
             return str(v)
 
-        cA1 = x[: self._n_dimensions]
-        cA2 = x[self._n_dimensions : 2 * self._n_dimensions]
-        cD1 = x[2 * self._n_dimensions : 3 * self._n_dimensions]
-        cD2 = x[3 * self._n_dimensions : 4 * self._n_dimensions]
-        vA = x[4 * self._n_dimensions : 5 * self._n_dimensions]
-        vD = x[5 * self._n_dimensions :]
+        jobs = []
+        for w in x:
+            cA1 = w[: self._n_dimensions]
+            cA2 = w[self._n_dimensions : 2 * self._n_dimensions]
+            cD1 = w[2 * self._n_dimensions : 3 * self._n_dimensions]
+            cD2 = w[3 * self._n_dimensions : 4 * self._n_dimensions]
+            vA = w[4 * self._n_dimensions : 5 * self._n_dimensions]
+            vD = w[5 * self._n_dimensions :]
 
-        args = [
+            args = [
                 self._c_region_simulator_path,
                 f"-A={_fmt(self._A)}",
                 f"-B={_fmt(self._B)}",
@@ -110,24 +114,32 @@ class CRegionSimulator(Problem):
                 f"-vD={_fmt(vD)}",
             ]
 
-        result = subprocess.run(
-            args=args,
-            capture_output=True,
+            jobs.append(delayed(subprocess.run)(args=args, capture_output=True))
+
+        executor = Parallel(
+            backend="threading",
+            n_jobs=self._n_joblib_jobs,
+            # verbose=50,
         )
+        results = executor(jobs)
 
-        if result.returncode != 0:
-            raise RuntimeError(
-                "c_region_simulator exited with code",
-                result.returncode,
-                str(result),
-            )
+        out_f = []
+        for r in results:
+            if r.returncode != 0:
+                raise RuntimeError(
+                    "c_region_simulator exited with code",
+                    r.returncode,
+                    str(r),
+                )
+            out_f.append(np.fromstring(r.stdout, dtype=float, sep=" "))
 
-        out["F"] = np.fromstring(result.stdout, dtype=float, sep=" ")
+        out["F"] = np.array(out_f)
 
     def __init__(
         self,
         c_region_simulator_path: Union[Path, str],
         n_dimensions: int,
+        n_joblib_jobs: int = 3,
         *,
         A: np.ndarray,
         B: np.ndarray,
@@ -196,12 +208,13 @@ class CRegionSimulator(Problem):
             n_constr=0,
             xl=xl,
             xu=xu,
-            elementwise_evaluation=True,
             **kwargs,
         )
 
         self._c_region_simulator_path = str(c_region_simulator_path)
         self._n_dimensions = n_dimensions
+        self._n_joblib_jobs = n_joblib_jobs
+
         self._cA1_min = cA1_min
         self._cA1_max = cA1_max
         self._cA2_min = cA2_min
@@ -253,10 +266,10 @@ if __name__ == "__main__":
     )
 
     n_dimensions = 8
-
     problem = CRegionSimulator(
         c_region_simulator_path=c_region_simulator_path,
         n_dimensions=n_dimensions,
+        n_joblib_jobs=-1,
         A=np.array(
             [
                 1.0105552342545365,
@@ -315,5 +328,5 @@ if __name__ == "__main__":
         verbose=True,
     )
 
-    print(results.X)
+    # print(results.X)
     print(results.F)
