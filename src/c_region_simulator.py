@@ -12,7 +12,13 @@ from pymoo.model.problem import Problem
 
 
 class CRegionSimulator(Problem):
-
+    """
+    The inputs of `c_region_simulator` are the variables `cA1`, `cA2`, `cD1`,
+    `cD2`, `vA`, and `vD`, each of dimension `_n_dimensions`. However, in
+    pymoo, an individual is a vector of length `6 * _n_dimensions`. It
+    represents the concatenation of `cA1`, `cA2`, `cD1`, `cD2`, `vA`, and `vD`
+    in that order.
+    """
     _c_region_simulator_path: str
     _n_dimensions: int
     _n_joblib_jobs: int
@@ -55,6 +61,18 @@ class CRegionSimulator(Problem):
     _x0min: np.ndarray
 
     def _evaluate(self, x, out, *args, **kwargs):
+        """
+        The inputs of `c_region_simulator` are the variables `cA1`, `cA2`,
+        `cD1`, `cD2`, `vA`, and `vD`, each of dimension `_n_dimensions`.
+        However, pymoo provides a single input vector. It has length `6 *
+        _n_dimensions`, and it is split to produce `cA1`, `cA2`, `cD1`, `cD2`,
+        `vA`, and `vD` in that order.
+
+        In reality, things are a bit more subtle: `_evaluate` is _batched_,
+        meaning that argument `x` is a `(N, 6 * _n_dimensions)` array. This
+        method thus iterates over the rows of `x`, splits each row in `6`, and
+        make `N` calls to `c_region_simulator`.
+        """
         def _fmt(v: Any) -> str:
             """
             Formats value to a string that can be accepted as a command line
