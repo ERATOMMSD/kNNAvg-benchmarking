@@ -313,7 +313,7 @@ if __name__ == "__main__":
         cD2_max=np.array([2.0] * n_dimensions),
         vA_min=np.array([0.0] * n_dimensions),
         vA_max=np.array([30.0] * n_dimensions),
-        vD_min=np.array([0.0] * n_dimensions),
+        vD_min=np.array([1.0] * n_dimensions),
         vD_max=np.array([30.0] * n_dimensions),
     )
 
