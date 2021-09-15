@@ -8,7 +8,7 @@ from typing import Any, Union
 from joblib import delayed, Parallel
 
 import numpy as np
-from pymoo.model.problem import Problem
+from pymoo.core.problem import Problem
 
 
 class CRegionSimulator(Problem):
@@ -274,7 +274,7 @@ class CRegionSimulator(Problem):
 if __name__ == "__main__":
     import os
 
-    from pymoo.algorithms.nsga2 import NSGA2
+    from pymoo.algorithms.moo.nsga2 import NSGA2
     from pymoo.factory import get_termination
     from pymoo.optimize import minimize
 
