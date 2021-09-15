@@ -61,7 +61,7 @@ class CRegionSimulator(Problem):
             argument for `c_region_simulator`.
             """
             if isinstance(v, np.ndarray):
-                np.array2string(
+                return np.array2string(
                     v,
                     formatter={
                         "float_kind": lambda y: "%.1f" % y,
