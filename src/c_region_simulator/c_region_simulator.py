@@ -150,9 +150,7 @@ class CRegionSimulator(Problem):
         ]
 
         jobs = [
-            delayed(_run)(
-                y, base_args, self._get_c_region_simulator_instance(i)
-            )
+            delayed(_run)(y, base_args, self._get_c_region_simulator_instance(i))
             for i, y in enumerate(np.array_split(x, self._batch_size))
         ]
         executor = Parallel(
@@ -298,25 +296,22 @@ class CRegionSimulator(Problem):
         self._x0min = x0min
 
 
-if __name__ == "__main__":
-    import os
+def main():
+    from pathlib import Path
 
     from pymoo.algorithms.moo.nsga2 import NSGA2
     from pymoo.factory import get_termination
     from pymoo.optimize import minimize
 
-    c_region_simulator_path = os.path.abspath(
-        __file__
-        + "/../../submodules/controllerTesting/controller"
-        + "/CRegionSimulatorWithPipe/c_region_simulator_with_pipe"
-    )
-
     n_dimensions = 8
+    c_region_simulator_path = (
+        Path(__file__).absolute().parent / "c_region_simulator_with_pipe"
+    )
     problem = CRegionSimulator(
         c_region_simulator_path=c_region_simulator_path,
         n_dimensions=n_dimensions,
         n_workers=-1,
-        batch_size=100,
+        batch_size=10,
         A=np.array(
             [
                 1.0105552342545365,
@@ -376,4 +371,7 @@ if __name__ == "__main__":
     )
 
     # print(results.X)
-    print(results.F)
+    # print(results.F)
+
+if __name__ == "__main__":
+    main()
