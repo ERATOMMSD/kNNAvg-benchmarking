@@ -154,9 +154,8 @@ class CRegionSimulator(Problem):
             jobs.append(delayed(_run)(y, base_args))
 
         executor = Parallel(
-            backend="threading",
             n_jobs=self._n_joblib_jobs,
-            # verbose=50,
+            prefer="processes",
         )
         results = executor(jobs)
         out["F"] = np.concatenate(results, axis=0)
@@ -299,7 +298,7 @@ if __name__ == "__main__":
         c_region_simulator_path=c_region_simulator_path,
         n_dimensions=n_dimensions,
         n_joblib_jobs=-1,
-        batch_size=20,
+        batch_size=100,
         A=np.array(
             [
                 1.0105552342545365,
