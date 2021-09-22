@@ -2,13 +2,16 @@
 CRegionSimulator call wrapped in a pymoo.Problem
 """
 
-import subprocess
 from pathlib import Path
 from typing import Any, Dict, Union
+import subprocess
+
 from joblib import delayed, Parallel
 
 import numpy as np
 from pymoo.core.problem import Problem
+
+C_REGION_SIMULATOR_POOL: Dict[int, subprocess.Popen] = {}
 
 
 class CRegionSimulator(Problem):
@@ -23,7 +26,7 @@ class CRegionSimulator(Problem):
     _batch_size: int
     _c_region_simulator_path: str
     _n_dimensions: int
-    _n_joblib_jobs: int
+    _n_workers: int
 
     _cA1_min: np.ndarray
     _cA1_max: np.ndarray
@@ -93,13 +96,11 @@ class CRegionSimulator(Problem):
                 return "1" if v else "0"
             return str(v)
 
-        def _run(y: np.ndarray, base_args: Dict[str, str]) -> np.ndarray:
-            proc = subprocess.Popen(
-                [self._c_region_simulator_path],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                universal_newlines=True,
-            )
+        def _run(
+            y: np.ndarray,
+            base_args: Dict[str, str],
+            process: subprocess.Popen,
+        ) -> np.ndarray:
             out_f = []
             for w in y:
                 cA1 = w[: self._n_dimensions]
@@ -116,11 +117,10 @@ class CRegionSimulator(Problem):
                     f"-vA={_fmt(vA)}",
                     f"-vD={_fmt(vD)}",
                 ]
-                proc.stdin.write(" ".join(base_args + x_args) + "\n")
-                proc.stdin.flush()
-                raw_f = proc.stdout.readline().strip()
+                process.stdin.write(" ".join(base_args + x_args) + "\n")
+                process.stdin.flush()
+                raw_f = process.stdout.readline().strip()
                 out_f.append(np.fromstring(raw_f, dtype=float, sep=" "))
-            proc.terminate()
             return np.array(out_f)
 
         base_args = [
@@ -149,22 +149,40 @@ class CRegionSimulator(Problem):
             f"-x0min={_fmt(self._x0min)}",
         ]
 
-        jobs = []
-        for y in np.array_split(x, self._batch_size):
-            jobs.append(delayed(_run)(y, base_args))
-
+        jobs = [
+            delayed(_run)(
+                y, base_args, self._get_c_region_simulator_instance(i)
+            )
+            for i, y in enumerate(np.array_split(x, self._batch_size))
+        ]
         executor = Parallel(
-            n_jobs=self._n_joblib_jobs,
-            prefer="processes",
+            backend="threading",
+            n_jobs=self._n_workers,
         )
         results = executor(jobs)
         out["F"] = np.concatenate(results, axis=0)
+
+    def _get_c_region_simulator_instance(self, index: int) -> subprocess.Popen:
+        """
+        Creates or gets an existing Popen object connected to a
+        `c_region_simulator_with_pipe` instance.
+        """
+        global C_REGION_SIMULATOR_POOL
+        if index not in C_REGION_SIMULATOR_POOL:
+            process = subprocess.Popen(
+                [self._c_region_simulator_path],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                universal_newlines=True,
+            )
+            C_REGION_SIMULATOR_POOL[index] = process
+        return C_REGION_SIMULATOR_POOL[index]
 
     def __init__(
         self,
         c_region_simulator_path: Union[Path, str],
         n_dimensions: int,
-        n_joblib_jobs: int = 3,
+        n_workers: int = 3,
         batch_size: int = 10,
         *,
         A: np.ndarray,
@@ -240,7 +258,7 @@ class CRegionSimulator(Problem):
         self._batch_size = batch_size
         self._c_region_simulator_path = str(c_region_simulator_path)
         self._n_dimensions = n_dimensions
-        self._n_joblib_jobs = n_joblib_jobs
+        self._n_workers = n_workers
 
         self._cA1_min = cA1_min
         self._cA1_max = cA1_max
@@ -297,7 +315,7 @@ if __name__ == "__main__":
     problem = CRegionSimulator(
         c_region_simulator_path=c_region_simulator_path,
         n_dimensions=n_dimensions,
-        n_joblib_jobs=-1,
+        n_workers=-1,
         batch_size=100,
         A=np.array(
             [
