@@ -2,15 +2,14 @@
 CRegionSimulator call wrapped in a pymoo.Problem
 """
 
+from math import ceil
 from pathlib import Path
 from typing import Any, Dict, Union
 import subprocess
-from math import ceil
 
 from joblib import delayed, Parallel
-
-import numpy as np
 from pymoo.core.problem import Problem
+import numpy as np
 
 C_REGION_SIMULATOR_POOL: Dict[int, subprocess.Popen] = {}
 
@@ -303,7 +302,6 @@ class CRegionSimulator(Problem):
 
 
 def main():
-    from pathlib import Path
 
     from pymoo.algorithms.moo.nsga2 import NSGA2
     from pymoo.factory import get_termination
@@ -340,13 +338,13 @@ def main():
         modeA=3,
         modeD=3,
         neg=np.array([1.0, 1.0]),
-        nS=10000,
+        nS=1,
         overline_vA=1,
         overline_vD=1.5,
         pos=np.array([4.0, 0.0]),
         sigmasq=0.01,
         T=200,
-        threadCount=8,
+        threadCount=1,
         underline_vA=0,
         underline_vD=1.0,
         x0max=np.array([1.0, 1.0]),
@@ -370,14 +368,12 @@ def main():
     results = minimize(
         problem,
         algorithm,
-        get_termination("n_gen", 5),
-        seed=1,
-        save_history=True,
+        # get_termination("n_gen", 5),
         verbose=True,
     )
 
     # print(results.X)
-    # print(results.F)
+    print(results.F)
 
 
 if __name__ == "__main__":
