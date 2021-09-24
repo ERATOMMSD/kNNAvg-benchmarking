@@ -1,61 +1,99 @@
 """
 Pendulum cart problem wrapped inside a pymoo.Problem
 """
+from typing import List, Tuple
+from math import ceil
 
-from typing import Any, Dict, Union
-
-import numpy as np
+from joblib import delayed, Parallel
 from pymoo.core.problem import Problem
+import numpy as np
 
-
-# paramdic:
-#     type
-#     mp
-#     mc
-#     L
-#     g
-#     w
-
-# simdic:
-#     EMN
-#     EMT
-#     x0
-#     uprightThreshold
-#     umax
-#     umin
-#     xmax
-#     xmin
-
-# args:
-#     threadCount
-#     TOL
-#     DELTA
-#     nSMIN
-#     nSMAX
-#     nS
-#     ps
-#     us
-#     try
-#     printSimulationCount
-#     printnS
-#     twoObjectives
-#     noiseCoefficient
+from pcsim import pcsim
 
 
 class PendulumCart(Problem):
     """
-    Pendulum cart problem wrapped inside a pymoo.Problem
+    Pendulum cart problem wrapped inside a pymoo.Problem.
+
+    `pcsim` expects two input variables: `ps` and `pu`, each of n_dimensions
+    `n_dimensions`. The underlying `pymoo.Problem` is initialized with `n_var =
+    2 * n_dimensions`. In `_evaluate`, the input variable `x` (of shape `(N, 2
+    * n_dimensions)`), is split into `N` `(ps, pu)` pairs (in that order).
     """
+
+    _batch_size: int
+    _n_workers: int
+
+    _n_dimensions: int
+    _noise_coefficient: float
 
     def __init__(
         self,
-        **kwargs
+        n_dimensions: int,
+        noise_coefficient: float = 0.001,
+        ps_range: Tuple[float, float] = (0.0, 1.0),
+        pu_range: Tuple[float, float] = (-20.0, 20.0),
+        batch_size: int = 20,
+        n_workers: int = 3,
+        **kwargs,
     ):
-        super().__init__(
-            n_var=...,
-            n_obj=...,
-            n_constr=...,
-            xl=...,
-            xu=...,
-            **kwargs
+        x_range = np.array(
+            ([ps_range] * n_dimensions) + ([pu_range] * n_dimensions)
         )
+        xl, xu = x_range.T
+        super().__init__(
+            n_var=2 * n_dimensions,
+            n_obj=2,
+            xl=xl,
+            xu=xu,
+            **kwargs,
+        )
+        self._batch_size = batch_size
+        self._n_dimensions = n_dimensions
+        self._n_workers = n_workers
+        self._noise_coefficient = noise_coefficient
+
+    def _evaluate(self, x, out, *args, **kwargs):
+        def _run(y: List[np.ndarray]) -> np.ndarray:
+            results = [
+                pcsim(
+                    self._noise_coefficient,
+                    w[: self._n_dimensions],
+                    w[self._n_dimensions :],
+                )
+                for w in y
+            ]
+            return np.array(results)
+
+        batches = np.array_split(x, ceil(len(x) / self._batch_size))
+        jobs = [delayed(_run)(b) for b in batches]
+        executor = Parallel(n_jobs=self._n_workers)
+        results = executor(jobs)
+        out["F"] = np.concatenate(results, axis=0)
+
+
+if __name__ == "__main__":
+    from pymoo.algorithms.moo.nsga2 import NSGA2
+    from pymoo.factory import get_termination
+    from pymoo.optimize import minimize
+
+    n_dimensions = 5
+    noise_coefficient = 0.001
+    problem = PendulumCart(
+        batch_size=20,
+        n_workers=-1,
+        n_dimensions=n_dimensions,
+        noise_coefficient=noise_coefficient,
+    )
+
+    algorithm = NSGA2()
+
+    results = minimize(
+        problem,
+        algorithm,
+        get_termination("n_gen", 5),
+        verbose=True,
+    )
+
+    # print(results.X)
+    print(results.F)
