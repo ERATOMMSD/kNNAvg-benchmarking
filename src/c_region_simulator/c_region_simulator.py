@@ -5,6 +5,7 @@ CRegionSimulator call wrapped in a pymoo.Problem
 from pathlib import Path
 from typing import Any, Dict, Union
 import subprocess
+from math import ceil
 
 from joblib import delayed, Parallel
 
@@ -148,10 +149,14 @@ class CRegionSimulator(Problem):
             f"-x0max={_fmt(self._x0max)}",
             f"-x0min={_fmt(self._x0min)}",
         ]
-
+        batches = np.array_split(x, ceil(len(x) / self._batch_size))
         jobs = [
-            delayed(_run)(y, base_args, self._get_c_region_simulator_instance(i))
-            for i, y in enumerate(np.array_split(x, self._batch_size))
+            delayed(_run)(
+                y,
+                base_args,
+                self._get_c_region_simulator_instance(i),
+            )
+            for i, y in enumerate(batches)
         ]
         executor = Parallel(
             backend="threading",
@@ -311,7 +316,7 @@ def main():
         c_region_simulator_path=c_region_simulator_path,
         n_dimensions=n_dimensions,
         n_workers=-1,
-        batch_size=10,
+        batch_size=10000,
         A=np.array(
             [
                 1.0105552342545365,
@@ -372,6 +377,7 @@ def main():
 
     # print(results.X)
     # print(results.F)
+
 
 if __name__ == "__main__":
     main()
