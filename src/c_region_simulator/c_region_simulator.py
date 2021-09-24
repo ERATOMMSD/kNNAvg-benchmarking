@@ -119,7 +119,8 @@ class CRegionSimulator(Problem):
                     f"-vD={_fmt(vD)}",
                 ]
                 process.stdin.write(" ".join(base_args + x_args) + "\n")
-                process.stdin.flush()
+            process.stdin.flush()
+            for _ in range(len(y)):
                 raw_f = process.stdout.readline().strip()
                 out_f.append(np.fromstring(raw_f, dtype=float, sep=" "))
             return np.array(out_f)
@@ -316,7 +317,7 @@ def main():
         c_region_simulator_path=c_region_simulator_path,
         n_dimensions=n_dimensions,
         n_workers=-1,
-        batch_size=10000,
+        batch_size=20,
         A=np.array(
             [
                 1.0105552342545365,
