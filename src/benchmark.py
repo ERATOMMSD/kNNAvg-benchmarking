@@ -21,7 +21,7 @@ from pendulum_cart_problem import PendulumCartProblem
 
 C_REGION_SIMULATOR_PATH = (
     Path(__file__).absolute().parent
-    / "c_region_simulator"
+    / "c_region_simulator_problem"
     / "c_region_simulator_with_pipe"
 )
 OUTPUT_DIR_PATH = Path(__file__).absolute().parent / ".." / "out"
