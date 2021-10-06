@@ -29,7 +29,7 @@ OUTPUT_DIR_PATH = Path(__file__).absolute().parent / ".." / "out"
 
 def make_c_region_simulator(n_dimensions: int) -> CRegionSimulator:
     """Creates a CRegionSimulator problem."""
-    return CRegionSimulator(
+    problem = CRegionSimulator(
         c_region_simulator_path=C_REGION_SIMULATOR_PATH,
         n_dimensions=n_dimensions,
         n_workers=-1,
@@ -80,11 +80,13 @@ def make_c_region_simulator(n_dimensions: int) -> CRegionSimulator:
         vD_min=np.array([1.0] * n_dimensions),
         vD_max=np.array([30.0] * n_dimensions),
     )
+    return WrappedProblem(problem)
 
 
 def make_pendulum_cart(n_dimensions: int) -> PendulumCart:
     """Creates a PendulumCart problem."""
-    return PendulumCart(n_dimensions=n_dimensions, n_workers=-1)
+    problem = PendulumCart(n_dimensions=n_dimensions, n_workers=-1)
+    return WrappedProblem(problem)
 
 
 def make_zdt1(n_var: int, noise: float) -> ZDT1:
