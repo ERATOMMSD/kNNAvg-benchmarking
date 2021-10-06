@@ -1,12 +1,16 @@
 """
 Pendulum cart problem wrapped inside a pymoo.Problem
 """
-from typing import List, Tuple
 from math import ceil
+from pathlib import Path
+from typing import List, Tuple
+import sys
 
 from joblib import delayed, Parallel
 from pymoo.core.problem import Problem
 import numpy as np
+
+sys.path.append(str(Path(__file__).absolute().parent) + "/")
 
 from pcsim import pcsim
 
