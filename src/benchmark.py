@@ -12,8 +12,8 @@ from nmoo.evaluators import EvaluationPenaltyEvaluator
 from nmoo.noises import GaussianNoise
 from nmoo.wrapped_problem import WrappedProblem
 from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.factory import get_termination
 from pymoo.problems.multi.zdt import ZDT1
+from pymoo.util.termination.default import MultiObjectiveDefaultTermination
 import numpy as np
 
 from c_region_simulator import CRegionSimulator
@@ -137,7 +137,9 @@ def main():
         f"nsga2_p{pop_size}": {
             "algorithm": NSGA2(pop_size=pop_size),
             "save_history": False,
-            "termination": get_termination("n_eval", 100_000),
+            "termination": MultiObjectiveDefaultTermination(
+                n_max_evals=100_000,
+            )
         }
         for pop_size in [10, 20, 50]
     }
