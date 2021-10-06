@@ -4,7 +4,7 @@ c_region_simulator call wrapped in a pymoo.Problem
 
 from math import ceil
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 import subprocess
 
 from joblib import delayed, Parallel
@@ -98,7 +98,7 @@ class CRegionSimulatorProblem(Problem):
 
         def _run(
             y: np.ndarray,
-            base_args: Dict[str, str],
+            base_args: List[str],
             process: subprocess.Popen,
         ) -> np.ndarray:
             out_f = []
