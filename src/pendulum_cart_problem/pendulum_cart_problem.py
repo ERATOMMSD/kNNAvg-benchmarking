@@ -15,7 +15,7 @@ sys.path.append(str(Path(__file__).absolute().parent) + "/")
 from pcsim import pcsim
 
 
-class PendulumCart(Problem):
+class PendulumCartProblem(Problem):
     """
     Pendulum cart problem wrapped inside a pymoo.Problem.
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
     n_dimensions = 5
     noise_coefficient = 0.001
-    problem = PendulumCart(
+    problem = PendulumCartProblem(
         batch_size=20,
         n_workers=-1,
         n_dimensions=n_dimensions,

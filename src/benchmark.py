@@ -16,8 +16,8 @@ from pymoo.problems.multi.zdt import ZDT1
 from pymoo.util.termination.default import MultiObjectiveDefaultTermination
 import numpy as np
 
-from c_region_simulator import CRegionSimulator
-from pendulum_cart import PendulumCart
+from c_region_simulator_problem import CRegionSimulatorProblem
+from pendulum_cart_problem import PendulumCartProblem
 
 C_REGION_SIMULATOR_PATH = (
     Path(__file__).absolute().parent
@@ -27,9 +27,9 @@ C_REGION_SIMULATOR_PATH = (
 OUTPUT_DIR_PATH = Path(__file__).absolute().parent / ".." / "out"
 
 
-def make_c_region_simulator(n_dimensions: int) -> CRegionSimulator:
-    """Creates a CRegionSimulator problem."""
-    problem = CRegionSimulator(
+def make_c_region_simulator(n_dimensions: int) -> CRegionSimulatorProblem:
+    """Creates a CRegionSimulatorProblem problem."""
+    problem = CRegionSimulatorProblem(
         c_region_simulator_path=C_REGION_SIMULATOR_PATH,
         n_dimensions=n_dimensions,
         n_workers=-1,
@@ -83,9 +83,9 @@ def make_c_region_simulator(n_dimensions: int) -> CRegionSimulator:
     return WrappedProblem(problem)
 
 
-def make_pendulum_cart(n_dimensions: int) -> PendulumCart:
-    """Creates a PendulumCart problem."""
-    problem = PendulumCart(n_dimensions=n_dimensions, n_workers=-1)
+def make_pendulum_cart(n_dimensions: int) -> PendulumCartProblem:
+    """Creates a PendulumCartProblem problem."""
+    problem = PendulumCartProblem(n_dimensions=n_dimensions, n_workers=-1)
     return WrappedProblem(problem)
 
 
@@ -139,7 +139,7 @@ def main():
             "save_history": False,
             "termination": MultiObjectiveDefaultTermination(
                 n_max_evals=100_000,
-            )
+            ),
         }
         for pop_size in [10, 20, 50]
     }

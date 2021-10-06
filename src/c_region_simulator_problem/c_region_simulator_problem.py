@@ -1,5 +1,5 @@
 """
-CRegionSimulator call wrapped in a pymoo.Problem
+c_region_simulator call wrapped in a pymoo.Problem
 """
 
 from math import ceil
@@ -14,7 +14,7 @@ import numpy as np
 C_REGION_SIMULATOR_POOL: Dict[int, subprocess.Popen] = {}
 
 
-class CRegionSimulator(Problem):
+class CRegionSimulatorProblem(Problem):
     """
     The inputs of `c_region_simulator` are the variables `cA1`, `cA2`, `cD1`,
     `cD2`, `vA`, and `vD`, each of dimension `_n_dimensions`. However, in
@@ -311,7 +311,7 @@ def main():
     c_region_simulator_path = (
         Path(__file__).absolute().parent / "c_region_simulator_with_pipe"
     )
-    problem = CRegionSimulator(
+    problem = CRegionSimulatorProblem(
         c_region_simulator_path=c_region_simulator_path,
         n_dimensions=n_dimensions,
         n_workers=-1,
