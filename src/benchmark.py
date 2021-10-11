@@ -24,7 +24,7 @@ C_REGION_SIMULATOR_PATH = (
     / "c_region_simulator_problem"
     / "c_region_simulator_with_pipe"
 )
-OUTPUT_DIR_PATH = Path(__file__).absolute().parent / ".." / "out"
+OUTPUT_DIR_PATH = Path(__file__).absolute().parent / ".." / "benchmark1"
 
 
 def make_c_region_simulator(n_dimensions: int) -> CRegionSimulatorProblem:
