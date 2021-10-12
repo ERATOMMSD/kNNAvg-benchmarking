@@ -1,5 +1,8 @@
 results/
 
+# MacOS stahp
+.DS_Store
+
 # VSCode
 .vscode/
 *.code-workspace
