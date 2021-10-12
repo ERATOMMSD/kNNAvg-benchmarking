@@ -92,8 +92,12 @@ def main():
     benchmark_df = pd.read_csv(BENCHMARK_RESULT_PATH / "benchmark.csv")
     benchmark_df["timedelta"] = pd.to_timedelta(benchmark_df["timedelta"])
     jobs = [
-        delayed(compute_pis_safe)(i, row)
-        for i, row in enumerate(benchmark_df.iloc)
+        delayed(compute_pis_safe)(
+            row["problem"],
+            row["algorithm"],
+            row["n_run"],
+        )
+        for row in benchmark_df.iloc
     ]
     result = Parallel(n_jobs=-1, verbose=50)(jobs)
     df = pd.concat(result, ignore_index=True)
