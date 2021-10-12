@@ -13,7 +13,15 @@
 ## Results
 
 [Artifact
-link](https://drive.google.com/file/d/1D7hw8O3WATlZ6outz9IRMhdGAueotMFh/view?usp=sharing)
+link](https://drive.google.com/file/d/1P0ZTZEcxg8xFhBBBv_9yLaC7nlwWQt2G/view?usp=sharing)
 Contains all `npz` files and the `benchmark.csv` summary. Since the Pareto
 fronts have not been calculated (yet), `benchmark.csv` does not contain
 metrics.
+
+## Remark
+
+Unfortunately, this benchmark suffered a few problems:
+* no performance indicator was specified;
+* it ran on `nmoo 3.8.1`, which didn't implement default Pareto sets anyways;
+* `save_history` was set to `False`, which means that only the final generation
+  of a algorithm-problem pair is represented in the final `benchmark.csv`.
