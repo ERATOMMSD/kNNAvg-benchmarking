@@ -24,7 +24,9 @@ C_REGION_SIMULATOR_PATH = (
     / "c_region_simulator_problem"
     / "c_region_simulator_with_pipe"
 )
-OUTPUT_DIR_PATH = Path(__file__).absolute().parent / ".." / "benchmark2"
+OUTPUT_DIR_PATH = (
+    Path(__file__).absolute().parent / ".." / "results" / "benchmark2"
+)
 
 
 def make_c_region_simulator(n_dimensions: int) -> CRegionSimulatorProblem:
@@ -136,11 +138,11 @@ def main():
     for name, problem in problems.items():
         problem["df_n_evals"] = 10
         if name.startswith("crs_8"):
-            problem["hv_ref_point"] = np.array([100., 10.])
+            problem["hv_ref_point"] = np.array([100.0, 10.0])
         elif name.startswith("pd_5"):
-            problem["hv_ref_point"] = np.array([10., 10.])
+            problem["hv_ref_point"] = np.array([10.0, 10.0])
         elif name.startswith("zdt1_30"):
-            problem["hv_ref_point"] = np.array([10., 10.])
+            problem["hv_ref_point"] = np.array([10.0, 10.0])
         pf = problem["problem"].ground_problem().pareto_front()
         if not (pf is None):
             problem["pareto_front"] = pf
@@ -149,7 +151,6 @@ def main():
     algorithms = {
         f"nsga2_p{pop_size}": {
             "algorithm": NSGA2(pop_size=pop_size),
-            "save_history": True,
             "termination": MultiObjectiveDefaultTermination(
                 n_max_evals=100_000,
             ),
