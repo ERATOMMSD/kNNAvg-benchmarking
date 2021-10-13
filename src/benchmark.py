@@ -169,7 +169,7 @@ def main():
         performance_indicators=["df", "hv", "igd"],
         problems=problems,
     )
-    benchmark.run(verbose=50)
+    benchmark.run(n_jobs=60, verbose=50)
 
 
 if __name__ == "__main__":
