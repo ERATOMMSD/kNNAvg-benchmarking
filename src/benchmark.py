@@ -34,7 +34,7 @@ def make_c_region_simulator(n_dimensions: int) -> CRegionSimulatorProblem:
     problem = CRegionSimulatorProblem(
         c_region_simulator_path=C_REGION_SIMULATOR_PATH,
         n_dimensions=n_dimensions,
-        n_workers=-1,
+        n_workers=5,
         batch_size=20,
         A=np.array(
             [
@@ -161,16 +161,24 @@ def main():
     # Benchmark definition and execution
     if not os.path.isdir(OUTPUT_DIR_PATH):
         os.mkdir(OUTPUT_DIR_PATH)
-    benchmark = Benchmark(
-        algorithms=algorithms,
-        max_retry=10,
-        n_runs=30,
-        output_dir_path=OUTPUT_DIR_PATH,
-        performance_indicators=["df", "hv", "igd"],
-        problems=problems,
-    )
-    benchmark.run(n_jobs=60, verbose=50)
-
+    restart = True
+    while restart:
+        try:
+            benchmark = Benchmark(
+                algorithms=algorithms,
+                max_retry=10,
+                n_runs=30,
+                output_dir_path=OUTPUT_DIR_PATH,
+                performance_indicators=["df", "hv", "igd"],
+                problems=problems,
+            )
+            benchmark.run(n_jobs=60, verbose=50)
+        except:
+            print("=============================")
+            print("Benchmark crashed, restarting")
+            print("=============================")
+        else:
+            restart = False
 
 if __name__ == "__main__":
     main()
