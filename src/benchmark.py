@@ -3,14 +3,18 @@
 
 # To run on a big boy
 
+import os
+from itertools import product
 from pathlib import Path
 
 import click
 import numpy as np
+import pandas as pd
 from nmoo.benchmark import Benchmark
 from nmoo.denoisers import KNNAvg, ResampleAverage
 from nmoo.evaluators import EvaluationPenaltyEvaluator
 from nmoo.noises import GaussianNoise
+from nmoo.plotting import plot_performance_indicators
 from nmoo.wrapped_problem import WrappedProblem
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.problems.multi.zdt import ZDT1
@@ -39,9 +43,36 @@ def consolidate() -> None:
     benchmark = make_benchmark()
     benchmark._consolidate_pair_results()
     benchmark._compute_performance_indicators()
-    benchmark.dump_results(
-        benchmark._output_dir_path / "benchmark.csv", index=False
+    benchmark.dump_results(OUTPUT_DIR_PATH / "benchmark.csv", index=False)
+
+
+@main.command()
+def generate_plots() -> None:
+    benchmark = make_benchmark()
+    benchmark._results = pd.read_csv(OUTPUT_DIR_PATH / "benchmark.csv")
+    everything = product(
+        benchmark._problems.keys(),
+        benchmark._performance_indicators,
     )
+    path = OUTPUT_DIR_PATH / "plots"
+    if not os.path.isdir(path):
+        os.mkdir(path)
+    for pn, pi in enumerate(everything):
+        print(f"Generating plot for problem '{pn}' and PI '{pi}'")
+        try:
+            grid = plot_performance_indicators(
+                benchmark,
+                row="algorithm",
+                performance_indicators=[pi],
+                problems=[pn],
+            )
+            grid.savefig(path / f"{pn}.{pi}.jpg")
+        except KeyboardInterrupt:
+            return
+        except Exception as e:
+            print(
+                f"Error generating plot for problem '{pn}' and PI '{pi}':", e
+            )
 
 
 def make_benchmark() -> Benchmark:
