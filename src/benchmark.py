@@ -233,5 +233,21 @@ def run(n_jobs: int) -> None:
             restart = False
 
 
+@main.command()
+def tally() -> None:
+    """
+    Prints how many pairs have been successfully run against against how many
+    pairs there are in total.
+    """
+    pairs = make_benchmark()._all_pairs()
+    n = sum(
+        map(
+            lambda p: int((OUTPUT_DIR_PATH / p.result_filename()).is_file()),
+            pairs,
+        )
+    )
+    print(f"{n}/{len(pairs)}")
+
+
 if __name__ == "__main__":
     main()
