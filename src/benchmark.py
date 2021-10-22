@@ -3,6 +3,7 @@
 
 # To run on a big boy
 
+import logging
 import os
 from itertools import product
 from pathlib import Path
@@ -250,4 +251,8 @@ def tally() -> None:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        level=logging.DEBUG,
+    )
     main()
