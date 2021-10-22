@@ -40,14 +40,6 @@ def main() -> None:
 
 
 @main.command()
-def consolidate() -> None:
-    benchmark = make_benchmark()
-    benchmark._consolidate_pair_results()
-    benchmark._compute_performance_indicators()
-    benchmark.dump_results(OUTPUT_DIR_PATH / "benchmark.csv", index=False)
-
-
-@main.command()
 def generate_plots() -> None:
     benchmark = make_benchmark()
     benchmark._results = pd.read_csv(OUTPUT_DIR_PATH / "benchmark.csv")
