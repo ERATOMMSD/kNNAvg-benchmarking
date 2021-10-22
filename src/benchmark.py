@@ -30,7 +30,7 @@ C_REGION_SIMULATOR_PATH = (
     / "c_region_simulator_with_pipe"
 )
 OUTPUT_DIR_PATH = (
-    Path(__file__).absolute().parent / ".." / "results" / "benchmark2" / "artifacts"
+    Path(__file__).absolute().parent / ".." / "results" / "benchmark2"
 )
 
 
