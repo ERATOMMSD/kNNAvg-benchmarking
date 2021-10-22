@@ -52,6 +52,7 @@ def compute_global_pareto_populations() -> None:
 @main.command()
 def compute_performance_indicators() -> None:
     benchmark = make_benchmark()
+    benchmark._consolidate_pair_results()
     benchmark._compute_performance_indicators()
     benchmark.dump_results(
         benchmark._output_dir_path / "benchmark.csv", index=False
