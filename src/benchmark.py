@@ -43,15 +43,19 @@ def main() -> None:
 def consolidate_pair_results() -> None:
     make_benchmark()._consolidate_pair_results()
 
+
 @main.command()
 def compute_global_pareto_populations() -> None:
     make_benchmark()._compute_global_pareto_populations()
+
 
 @main.command()
 def compute_performance_indicators() -> None:
     benchmark = make_benchmark()
     benchmark._compute_performance_indicators()
-    benchmark.dump_results(benchmark._output_dir_path / "benchmark.csv", index=False)
+    benchmark.dump_results(
+        benchmark._output_dir_path / "benchmark.csv", index=False
+    )
 
 
 @main.command()
@@ -65,7 +69,7 @@ def generate_plots() -> None:
     path = OUTPUT_DIR_PATH / "plots"
     if not os.path.isdir(path):
         os.mkdir(path)
-    for pn, pi in enumerate(everything):
+    for pn, pi in everything:
         print(f"Generating plot for problem '{pn}' and PI '{pi}'")
         try:
             grid = plot_performance_indicators(
