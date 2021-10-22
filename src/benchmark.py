@@ -30,13 +30,28 @@ C_REGION_SIMULATOR_PATH = (
     / "c_region_simulator_with_pipe"
 )
 OUTPUT_DIR_PATH = (
-    Path(__file__).absolute().parent / ".." / "results" / "benchmark2"
+    Path(__file__).absolute().parent / ".." / "results" / "benchmark2" / "artifacts"
 )
 
 
 @click.group()
 def main() -> None:
     pass
+
+
+@main.command()
+def consolidate_pair_results() -> None:
+    make_benchmark()._consolidate_pair_results()
+
+@main.command()
+def compute_global_pareto_populations() -> None:
+    make_benchmark()._compute_global_pareto_populations()
+
+@main.command()
+def compute_performance_indicators() -> None:
+    benchmark = make_benchmark()
+    benchmark._compute_performance_indicators()
+    benchmark.dump_results(benchmark._output_dir_path / "benchmark.csv", index=False)
 
 
 @main.command()
