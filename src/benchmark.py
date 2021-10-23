@@ -153,7 +153,7 @@ def make_benchmark() -> Benchmark:
         max_retry=10,
         n_runs=30,
         output_dir_path=OUTPUT_DIR_PATH,
-        performance_indicators=["hv", "igd"],
+        performance_indicators=["df", "hv", "igd"],
         problems=problems,
     )
 
