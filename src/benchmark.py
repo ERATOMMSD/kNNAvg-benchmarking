@@ -93,6 +93,7 @@ def make_benchmark() -> Benchmark:
     # The noisy problems and their names
     noisy_problems = {
         "crs_8": make_c_region_simulator(8),
+        "crs_8_1000": make_c_region_simulator(8, 1000),
         "pd_5": make_pendulum_cart(5),
         "zdt1_30": make_zdt1(30, 0.2),
     }
@@ -158,7 +159,7 @@ def make_benchmark() -> Benchmark:
     )
 
 
-def make_c_region_simulator(n_dimensions: int) -> CRegionSimulatorProblem:
+def make_c_region_simulator(n_dimensions: int, nS=1) -> CRegionSimulatorProblem:
     """Creates a CRegionSimulatorProblem problem."""
     problem = CRegionSimulatorProblem(
         c_region_simulator_path=C_REGION_SIMULATOR_PATH,
@@ -187,7 +188,7 @@ def make_c_region_simulator(n_dimensions: int) -> CRegionSimulatorProblem:
         modeA=3,
         modeD=3,
         neg=np.array([1.0, 1.0]),
-        nS=1,
+        nS=nS,
         overline_vA=1,
         overline_vD=1.5,
         pos=np.array([4.0, 0.0]),
