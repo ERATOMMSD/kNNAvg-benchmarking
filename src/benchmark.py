@@ -119,7 +119,7 @@ def make_benchmark() -> Benchmark:
             ),
         }
         for name, problem in noisy_problems.items()
-        for n in [10, 100, 1000]
+        for n in [10, 100]
     }
     # All the problem descriptions
     problems = {**knn_problems, **avg_problems}
@@ -153,7 +153,7 @@ def make_benchmark() -> Benchmark:
         max_retry=10,
         n_runs=30,
         output_dir_path=OUTPUT_DIR_PATH,
-        performance_indicators=["hv", "igd"],
+        performance_indicators=["df", "hv", "igd"],
         problems=problems,
     )
 
@@ -235,7 +235,7 @@ def run(n_jobs: int) -> None:
     while restart:
         try:
             benchmark = make_benchmark()
-            benchmark.run(n_jobs, 10, verbose=50)
+            benchmark.run(n_jobs, n_jobs, verbose=50)
         except KeyboardInterrupt:
             restart = False
         except:
