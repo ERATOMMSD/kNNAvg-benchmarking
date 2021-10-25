@@ -119,7 +119,7 @@ def make_benchmark() -> Benchmark:
             ),
         }
         for name, problem in noisy_problems.items()
-        for n in [10, 100]
+        for n in [10, 100, 1000]
     }
     # All the problem descriptions
     problems = {**knn_problems, **avg_problems}
@@ -153,7 +153,7 @@ def make_benchmark() -> Benchmark:
         max_retry=10,
         n_runs=30,
         output_dir_path=OUTPUT_DIR_PATH,
-        performance_indicators=["df", "hv", "igd"],
+        performance_indicators=["hv", "igd"],
         problems=problems,
     )
 
@@ -163,7 +163,7 @@ def make_c_region_simulator(n_dimensions: int) -> CRegionSimulatorProblem:
     problem = CRegionSimulatorProblem(
         c_region_simulator_path=C_REGION_SIMULATOR_PATH,
         n_dimensions=n_dimensions,
-        n_workers=5,
+        n_workers=8,
         batch_size=20,
         A=np.array(
             [
@@ -235,7 +235,7 @@ def run(n_jobs: int) -> None:
     while restart:
         try:
             benchmark = make_benchmark()
-            benchmark.run(n_jobs=n_jobs, verbose=50)
+            benchmark.run(n_jobs, 10, verbose=50)
         except KeyboardInterrupt:
             restart = False
         except:
