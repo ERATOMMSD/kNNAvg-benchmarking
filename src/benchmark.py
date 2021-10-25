@@ -120,7 +120,7 @@ def make_benchmark() -> Benchmark:
             ),
         }
         for name, problem in noisy_problems.items()
-        for n in [10, 100]
+        for n in [10, 100, 1000]
     }
     # All the problem descriptions
     problems = {**knn_problems, **avg_problems}
