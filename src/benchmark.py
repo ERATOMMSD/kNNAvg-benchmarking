@@ -120,7 +120,7 @@ def make_benchmark() -> Benchmark:
             ),
         }
         for name, problem in noisy_problems.items()
-        for n in [10, 100, 1000]
+        for n in [10, 100]
     }
     # All the problem descriptions
     problems = {**knn_problems, **avg_problems}
@@ -164,7 +164,7 @@ def make_c_region_simulator(n_dimensions: int, nS=1) -> CRegionSimulatorProblem:
     problem = CRegionSimulatorProblem(
         c_region_simulator_path=C_REGION_SIMULATOR_PATH,
         n_dimensions=n_dimensions,
-        n_workers=8,
+        n_workers=1,
         batch_size=20,
         A=np.array(
             [
@@ -194,7 +194,7 @@ def make_c_region_simulator(n_dimensions: int, nS=1) -> CRegionSimulatorProblem:
         pos=np.array([4.0, 0.0]),
         sigmasq=0.01,
         T=200,
-        threadCount=1,
+        threadCount=8,
         underline_vA=0,
         underline_vD=1.0,
         x0max=np.array([1.0, 1.0]),
