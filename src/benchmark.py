@@ -32,6 +32,7 @@ C_REGION_SIMULATOR_PATH = (
 OUTPUT_DIR_PATH = (
     Path(__file__).absolute().parent / ".." / "results" / "benchmark2"
 )
+PLOTS_OUTPUT_DIR_PATH = OUTPUT_DIR_PATH / "plots"
 
 
 @click.group()
@@ -40,36 +41,16 @@ def main() -> None:
 
 
 @main.command()
-def consolidate_pair_results() -> None:
-    make_benchmark()._consolidate_pair_results()
-
-
-@main.command()
-def compute_global_pareto_populations() -> None:
-    make_benchmark()._compute_global_pareto_populations()
-
-
-@main.command()
-def compute_performance_indicators() -> None:
-    benchmark = make_benchmark()
-    benchmark._consolidate_pair_results()
-    benchmark._compute_performance_indicators()
-    benchmark.dump_results(
-        benchmark._output_dir_path / "benchmark.csv", index=False
-    )
-
-
-@main.command()
 def generate_plots() -> None:
+    """Generate PI plots"""
     benchmark = make_benchmark()
     benchmark._results = pd.read_csv(OUTPUT_DIR_PATH / "benchmark.csv")
     everything = product(
         benchmark._problems.keys(),
         benchmark._performance_indicators,
     )
-    path = OUTPUT_DIR_PATH / "plots"
-    if not os.path.isdir(path):
-        os.mkdir(path)
+    if not os.path.isdir(PLOTS_OUTPUT_DIR_PATH):
+        os.mkdir(PLOTS_OUTPUT_DIR_PATH)
     for pn, pi in everything:
         print(f"Generating plot for problem '{pn}' and PI '{pi}'")
         try:
@@ -79,7 +60,7 @@ def generate_plots() -> None:
                 performance_indicators=[pi],
                 problems=[pn],
             )
-            grid.savefig(path / f"{pn}.{pi}.jpg")
+            grid.savefig(PLOTS_OUTPUT_DIR_PATH / f"{pn}.{pi}.jpg")
         except KeyboardInterrupt:
             return
         except Exception as e:
@@ -159,8 +140,19 @@ def make_benchmark() -> Benchmark:
     )
 
 
-def make_c_region_simulator(n_dimensions: int, nS=1) -> CRegionSimulatorProblem:
-    """Creates a CRegionSimulatorProblem problem."""
+def make_c_region_simulator(
+    n_dimensions: int, n_threads=1
+) -> CRegionSimulatorProblem:
+    """
+    Creates a `CRegionSimulatorProblem` wrapped inside a `nmoo.WrappedProblem`.
+
+    Args:
+        n_dimensions (int): Number of dimension for the `c_region_simulator`
+            problem. This results in an actual search space of
+            `6 * n_dimensions` dimensions.
+        n_threads (int): Number of threads each `c_region_simulator` process is
+            allowed to use. Defaults to 1.
+    """
     problem = CRegionSimulatorProblem(
         c_region_simulator_path=C_REGION_SIMULATOR_PATH,
         n_dimensions=n_dimensions,
@@ -188,7 +180,7 @@ def make_c_region_simulator(n_dimensions: int, nS=1) -> CRegionSimulatorProblem:
         modeA=3,
         modeD=3,
         neg=np.array([1.0, 1.0]),
-        nS=nS,
+        nS=n_threads,
         overline_vA=1,
         overline_vD=1.5,
         pos=np.array([4.0, 0.0]),
@@ -216,13 +208,20 @@ def make_c_region_simulator(n_dimensions: int, nS=1) -> CRegionSimulatorProblem:
 
 
 def make_pendulum_cart(n_dimensions: int) -> PendulumCartProblem:
-    """Creates a PendulumCartProblem problem."""
+    """
+    Creates a `PendulumCartProblem` wrapped inside a `nmoo.WrappedProblem`.
+
+    Args:
+        n_dimensions (int): Number of dimension for the `pendulum_cart`
+            problem. This results in an actual search space of
+            `2 * n_dimensions` dimensions.
+    """
     problem = PendulumCartProblem(n_dimensions=n_dimensions, n_workers=-1)
     return WrappedProblem(problem)
 
 
 def make_zdt1(n_var: int, noise: float) -> ZDT1:
-    """Creates a noisy ZDT1 problem."""
+    """Creates a noisy ZDT1 problem with Gaussian noise."""
     return GaussianNoise(
         WrappedProblem(ZDT1(n_var=n_var)),
         {"F": (np.array([0, 0]), noise * np.eye(2, dtype=float))},
@@ -232,6 +231,7 @@ def make_zdt1(n_var: int, noise: float) -> ZDT1:
 @main.command()
 @click.option("--n-jobs", default=60)
 def run(n_jobs: int) -> None:
+    """Run the benchmark. It will automatically restart if it crashes."""
     restart = True
     while restart:
         try:
@@ -240,9 +240,11 @@ def run(n_jobs: int) -> None:
         except KeyboardInterrupt:
             restart = False
         except:
-            print("=============================")
-            print("Benchmark crashed, restarting")
-            print("=============================")
+            print()
+            print("===============================")
+            print("BENCHMARK CRASHED... RESTARTING")
+            print("===============================")
+            print()
         else:
             restart = False
 
@@ -251,7 +253,8 @@ def run(n_jobs: int) -> None:
 def tally() -> None:
     """
     Prints how many pairs have been successfully run against against how many
-    pairs there are in total.
+    pairs there are in total. It is safe to run this from a different shell
+    while the benchmark is running.
     """
     pairs = make_benchmark()._all_pairs()
     n = sum(
