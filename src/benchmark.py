@@ -41,8 +41,28 @@ def main() -> None:
 
 
 @main.command()
+def consolidate() -> None:
+    """
+    Performs post-processing on all available raw data.
+
+    Computes global Pareto populations, performance indicators, and
+    consolidates everything into benchmark.csv. Can be safely called even if
+    the benchmark isn't complete.
+    """
+    benchmark = make_benchmark()
+    benchmark.compute_global_pareto_populations()
+    benchmark.compute_performance_indicators()
+    benchmark.consolidate()
+
+
+@main.command()
 def generate_plots() -> None:
-    """Generate PI plots"""
+    """
+    Generate PI plots.
+
+    Make sure that the data is consolidated first: either by letting the
+    benchmark run to completion, or by using the `consolidate` command.
+    """
     benchmark = make_benchmark()
     benchmark._results = pd.read_csv(OUTPUT_DIR_PATH / "benchmark.csv")
     everything = product(
@@ -239,10 +259,11 @@ def run(n_jobs: int) -> None:
             benchmark.run(n_jobs, n_jobs, verbose=50)
         except KeyboardInterrupt:
             restart = False
-        except:
+        except Exception as e:
             print()
             print("===============================")
             print("BENCHMARK CRASHED... RESTARTING")
+            print(e)
             print("===============================")
             print()
         else:
