@@ -77,6 +77,7 @@ def generate_plots() -> None:
                 row="algorithm",
                 performance_indicators=[pi],
                 problems=[pn],
+                legend=False,
             )
             grid.savefig(PLOTS_OUTPUT_DIR_PATH / f"{pn}.{pi}.jpg")
         except KeyboardInterrupt:
