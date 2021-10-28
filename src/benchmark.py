@@ -50,8 +50,6 @@ def consolidate() -> None:
     the benchmark isn't complete.
     """
     benchmark = make_benchmark()
-    benchmark.compute_global_pareto_populations()
-    benchmark.compute_performance_indicators()
     benchmark.consolidate()
 
 
