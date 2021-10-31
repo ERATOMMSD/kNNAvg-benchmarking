@@ -79,8 +79,8 @@ def make_benchmark() -> Benchmark:
     """Defines the benchmark"""
     # The noisy problems and their names
     noisy_problems = {
-        "crs_8": make_c_region_simulator(8),
-        "crs_8_1000": make_c_region_simulator(8, 1000),
+        "crs_8": make_c_region_simulator(8, n_threads=8),
+        "crs_8_1000": make_c_region_simulator(8, nS=1000, n_threads=8),
         "pd_5": make_pendulum_cart(5),
         "zdt1_30": make_zdt1(30, 0.2),
     }
@@ -151,7 +151,7 @@ def make_benchmark() -> Benchmark:
 
 
 def make_c_region_simulator(
-    n_dimensions: int, n_threads=1
+    n_dimensions: int, nS=1, n_threads=1
 ) -> CRegionSimulatorProblem:
     """
     Creates a `CRegionSimulatorProblem` wrapped inside a `nmoo.WrappedProblem`.
@@ -160,8 +160,10 @@ def make_c_region_simulator(
         n_dimensions (int): Number of dimension for the `c_region_simulator`
             problem. This results in an actual search space of
             `6 * n_dimensions` dimensions.
+        nS (int): Number of repetitions of the simulation (see
+            c_region_simulator doc). Defaults to 1.
         n_threads (int): Number of threads each `c_region_simulator` process is
-            allowed to use. Defaults to 1.
+            allowed to use. Defaults to 8.
     """
     problem = CRegionSimulatorProblem(
         c_region_simulator_path=C_REGION_SIMULATOR_PATH,
@@ -190,13 +192,13 @@ def make_c_region_simulator(
         modeA=3,
         modeD=3,
         neg=np.array([1.0, 1.0]),
-        nS=n_threads,
+        nS=nS,
         overline_vA=1,
         overline_vD=1.5,
         pos=np.array([4.0, 0.0]),
         sigmasq=0.01,
         T=200,
-        threadCount=8,
+        threadCount=n_threads,
         underline_vA=0,
         underline_vD=1.0,
         x0max=np.array([1.0, 1.0]),
