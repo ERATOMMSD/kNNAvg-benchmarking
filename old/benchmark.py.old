@@ -41,6 +41,19 @@ def main() -> None:
 
 
 @main.command()
+def consolidate() -> None:
+    """
+    Performs post-processing on all available raw data.
+
+    Computes global Pareto populations, performance indicators, and
+    consolidates everything into benchmark.csv. Can be safely called even if
+    the benchmark isn't complete.
+    """
+    benchmark = make_benchmark()
+    benchmark.consolidate()
+
+
+@main.command()
 def generate_plots() -> None:
     """
     Generate PI plots.
@@ -232,6 +245,45 @@ def make_zdt1(n_var: int, noise: float) -> ZDT1:
         WrappedProblem(ZDT1(n_var=n_var)),
         {"F": (np.array([0, 0]), noise * np.eye(2, dtype=float))},
     )
+
+
+@main.command()
+@click.option("--n-jobs", default=60)
+def run(n_jobs: int) -> None:
+    """Run the benchmark. It will automatically restart if it crashes."""
+    restart = True
+    while restart:
+        try:
+            benchmark = make_benchmark()
+            benchmark.run(n_jobs, n_jobs, verbose=50)
+        except KeyboardInterrupt:
+            restart = False
+        except Exception as e:
+            print()
+            print("===============================")
+            print("BENCHMARK CRASHED... RESTARTING")
+            print(e)
+            print("===============================")
+            print()
+        else:
+            restart = False
+
+
+@main.command()
+def tally() -> None:
+    """
+    Prints how many pairs have been successfully run against against how many
+    pairs there are in total. It is safe to run this from a different shell
+    while the benchmark is running.
+    """
+    pairs = make_benchmark()._all_pairs()
+    n = sum(
+        map(
+            lambda p: int((OUTPUT_DIR_PATH / p.result_filename()).is_file()),
+            pairs,
+        )
+    )
+    print(f"{n}/{len(pairs)}")
 
 
 if __name__ == "__main__":
