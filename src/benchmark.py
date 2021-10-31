@@ -21,8 +21,8 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.problems.multi.zdt import ZDT1
 from pymoo.util.termination.default import MultiObjectiveDefaultTermination
 
-from c_region_simulator_problem import CRegionSimulatorProblem
-from pendulum_cart_problem import PendulumCartProblem
+from .c_region_simulator_problem import CRegionSimulatorProblem
+from .pendulum_cart_problem import PendulumCartProblem
 
 C_REGION_SIMULATOR_PATH = (
     Path(__file__).absolute().parent
