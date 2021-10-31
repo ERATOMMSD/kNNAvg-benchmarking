@@ -22,3 +22,16 @@ Arcaini.
   to `results/benchmarkN/README.md` for more details;
 * `submodules/controllerTesting/`: dependency for `c_region_simulator` and
   `pendulum_cart`;
+
+## How to run the benchmark
+
+```sh
+python -m nmoo run src.benchmark:make_benchmark
+```
+
+Refer to
+```sh
+python -m nmoo --help
+python -m nmoo run --help
+```
+for more information.
