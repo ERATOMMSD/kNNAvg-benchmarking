@@ -84,6 +84,10 @@ def make_benchmark() -> Benchmark:
         "pd_5": make_pendulum_cart(5),
         "zdt1_30": make_zdt1(30, 0.2),
     }
+    # Baseline problems, with no denoiser
+    baseline_problems = {
+        name: {"problem": problem} for name, problem in noisy_problems.items()
+    }
     # The knn-wrapped problems descriptions
     knn_problems = {
         f"{name}_k{k}": {
@@ -110,7 +114,7 @@ def make_benchmark() -> Benchmark:
         for n in [10, 100]
     }
     # All the problem descriptions
-    problems = {**knn_problems, **avg_problems}
+    problems = {**baseline_problems, **knn_problems, **avg_problems}
 
     # Add additional problem data
     for name, problem in problems.items():
