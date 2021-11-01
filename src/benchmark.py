@@ -129,7 +129,7 @@ def denoise_pareto_populations(n_jobs: int) -> None:
     def _patch(pair):
         pp_path = OUTPUT_DIR_PATH / pair.pareto_population_filename()
         ppp_path = OUTPUT_DIR_PATH / (
-            pair.pareto_population_filename() + ".denoised"
+            pair.pareto_population_filename() + ".denoised.npz"
         )
         if ppp_path.is_file():
             return
