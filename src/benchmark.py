@@ -11,18 +11,25 @@ from pathlib import Path
 import click
 import numpy as np
 import pandas as pd
+from joblib import Parallel, delayed
 from nmoo.benchmark import Benchmark
 from nmoo.denoisers import KNNAvg, ResampleAverage
 from nmoo.evaluators import EvaluationPenaltyEvaluator
 from nmoo.noises import GaussianNoise
 from nmoo.plotting import plot_performance_indicators
+from nmoo.utils.population import pareto_frontier_mask, population_list_to_dict
 from nmoo.wrapped_problem import WrappedProblem
 from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.core.population import Population
 from pymoo.problems.multi.zdt import ZDT1
 from pymoo.util.termination.default import MultiObjectiveDefaultTermination
 
-from .c_region_simulator_problem import CRegionSimulatorProblem
-from .pendulum_cart_problem import PendulumCartProblem
+try:
+    from .c_region_simulator_problem import CRegionSimulatorProblem
+    from .pendulum_cart_problem import PendulumCartProblem
+except ImportError:
+    from c_region_simulator_problem import CRegionSimulatorProblem
+    from pendulum_cart_problem import PendulumCartProblem
 
 C_REGION_SIMULATOR_PATH = (
     Path(__file__).absolute().parent
@@ -38,6 +45,106 @@ PLOTS_OUTPUT_DIR_PATH = OUTPUT_DIR_PATH / "plots"
 @click.group()
 def main() -> None:
     pass
+
+
+@main.command()
+@click.option(
+    "--n-jobs",
+    default=-1,
+    type=click.INT,
+)
+def compute_effective_global_pareto_populations(n_jobs: int) -> None:
+    """
+    Computes global Pareto population based on the denoised `F` values. Assumes
+    that the top level history files have been patched with `patch_histories`.
+    """
+
+    def _do(self, problem_name: str, algorithm_name: str) -> None:
+        """
+        Computes the global Pareto population of a given problem-algorithm
+        pair. See `compute_global_pareto_populations`.
+        """
+        egpp_path = (
+            self._output_dir_path / f"{problem_name}.{algorithm_name}.egpp.npz"
+        )
+        if egpp_path.is_file():
+            # Effective global Pareto population has already been calculated
+            return
+        logging.debug(
+            "Computing global Pareto population for pair [%s - %s]",
+            problem_name,
+            algorithm_name,
+        )
+        populations = []
+        for n_run in range(1, self._n_runs):
+            path = (
+                self._output_dir_path
+                / f"{problem_name}.{algorithm_name}.{n_run}.pp.npz.denoised.npz"
+            )
+            if not path.exists():
+                logging.debug(
+                    "File %s does not exist. The corresponding pair most "
+                    "likely hasn't finished or failed",
+                    path,
+                )
+                continue
+            data = np.load(path)
+            population = Population.create(data["X"])
+            population.set(
+                F=data["F"],
+                feasible=np.full((data["X"].shape[0], 1), True),
+            )
+            populations.append(population)
+
+        # Dump eGPP
+        merged = population_list_to_dict(populations)
+        mask = pareto_frontier_mask(merged["F"])
+        np.savez_compressed(
+            egpp_path,
+            **{k: v[mask] for k, v in merged.items()},
+        )
+
+    benchmark = make_benchmark()
+    pa_pairs = product(
+        benchmark._problems.keys(),
+        benchmark._algorithms.keys(),
+    )
+    executor = Parallel(n_jobs=n_jobs, verbose=50)
+    executor(delayed(_do)(benchmark, an, pn) for an, pn in pa_pairs)
+
+
+@main.command()
+@click.option(
+    "--n-jobs",
+    default=-1,
+    type=click.INT,
+)
+def denoise_pareto_populations(n_jobs: int) -> None:
+    """
+    Patches top level histories files by adding a `F_denoised` key, containing
+    10 times sampled and averaged measurements of the problem on the values at
+    key `X`.
+    """
+
+    def _patch(pair):
+        pp_path = OUTPUT_DIR_PATH / pair.pareto_population_filename()
+        ppp_path = OUTPUT_DIR_PATH / (
+            pair.pareto_population_filename() + ".denoised"
+        )
+        if ppp_path.is_file():
+            return
+        raw = np.load(pp_path, allow_pickle=True)
+        pp = dict(raw)
+        raw.close()
+        base_problem = pair.problem_description["problem"].ground_problem()
+        problem = ResampleAverage(base_problem, 10)
+        pp["F"] = problem.evaluate(pp["X"])
+        np.savez_compressed(ppp_path, **pp)
+
+    logging.info("Denoising Pareto populations")
+    benchmark = make_benchmark()
+    executor = Parallel(n_jobs, verbose=50)
+    executor(delayed(_patch)(p) for p in benchmark._all_pairs())
 
 
 @main.command()
@@ -79,7 +186,7 @@ def make_benchmark() -> Benchmark:
     """Defines the benchmark"""
     # The noisy problems and their names
     noisy_problems = {
-        "crs_8": make_c_region_simulator(8, n_threads=8),
+        "crs_8": make_c_region_simulator(8),
         "crs_8_1000": make_c_region_simulator(8, nS=1000, n_threads=8),
         "pd_5": make_pendulum_cart(5),
         "zdt1_30": make_zdt1(30, 0.2),
@@ -114,7 +221,8 @@ def make_benchmark() -> Benchmark:
         for n in [10, 100]
     }
     # All the problem descriptions
-    problems = {**baseline_problems, **knn_problems, **avg_problems}
+    # problems = {**baseline_problems, **knn_problems, **avg_problems}
+    problems = {**knn_problems, **avg_problems}
 
     # Add additional problem data
     for name, problem in problems.items():
