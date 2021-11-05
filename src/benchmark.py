@@ -17,10 +17,8 @@ from nmoo.denoisers import KNNAvg, ResampleAverage
 from nmoo.evaluators import EvaluationPenaltyEvaluator
 from nmoo.noises import GaussianNoise
 from nmoo.plotting import plot_performance_indicators
-from nmoo.utils.population import pareto_frontier_mask, population_list_to_dict
 from nmoo.wrapped_problem import WrappedProblem
 from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.core.population import Population
 from pymoo.problems.multi.zdt import ZDT1
 from pymoo.util.termination.default import MultiObjectiveDefaultTermination
 
@@ -37,7 +35,7 @@ C_REGION_SIMULATOR_PATH = (
     / "c_region_simulator_with_pipe"
 )
 OUTPUT_DIR_PATH = (
-    Path(__file__).absolute().parent / ".." / "results" / "benchmark2"
+    Path(__file__).absolute().parent / ".." / "results" / "benchmark"
 )
 PLOTS_OUTPUT_DIR_PATH = OUTPUT_DIR_PATH / "plots"
 
@@ -89,30 +87,28 @@ def generate_plots() -> None:
     Make sure that the data is consolidated first: either by letting the
     benchmark run to completion, or by using the `consolidate` command.
     """
+    import matplotlib.pyplot as plt
+
     benchmark = make_benchmark()
     benchmark._results = pd.read_csv(OUTPUT_DIR_PATH / "benchmark.csv")
-    everything = product(
-        benchmark._problems.keys(),
-        benchmark._performance_indicators,
-    )
     if not os.path.isdir(PLOTS_OUTPUT_DIR_PATH):
         os.mkdir(PLOTS_OUTPUT_DIR_PATH)
-    for pn, pi in everything:
-        print(f"Generating plot for problem '{pn}' and PI '{pi}'")
+    for pn in benchmark._problems.keys():
+        print(f"Generating plot for problem '{pn}'")
         try:
             grid = plot_performance_indicators(
                 benchmark,
                 row="algorithm",
-                performance_indicators=[pi],
                 problems=[pn],
                 legend=False,
             )
-            grid.savefig(PLOTS_OUTPUT_DIR_PATH / f"{pn}.{pi}.jpg")
+            grid.savefig(PLOTS_OUTPUT_DIR_PATH / f"{pn}.jpg")
+            plt.close(grid.figure)
         except KeyboardInterrupt:
             return
         except Exception as e:
             print(
-                f"Error generating plot for problem '{pn}' and PI '{pi}':", e
+                f"Error generating plot for problem '{pn}':", e
             )
 
 
@@ -179,7 +175,7 @@ def make_benchmark() -> Benchmark:
                 n_max_evals=100_000,
             ),
         }
-        for pop_size in [10, 20, 50]
+        for pop_size in [10, 20]
     }
 
     return Benchmark(
@@ -285,6 +281,6 @@ def make_zdt1(n_var: int, noise: float) -> ZDT1:
 if __name__ == "__main__":
     logging.basicConfig(
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        level=logging.DEBUG,
+        level=logging.INFO,
     )
     main()
