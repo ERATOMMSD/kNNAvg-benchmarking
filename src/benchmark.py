@@ -46,6 +46,18 @@ def main() -> None:
 
 
 @main.command()
+def check() -> None:
+    benchmark = make_benchmark()
+    for p in benchmark._all_pairs():
+        try:
+            np.load(benchmark._output_dir_path / (
+                p.pareto_population_filename() + ".denoised.npz"
+            ))
+        except Exception as e:
+            print(p.pareto_population_filename(), str(e))
+
+
+@main.command()
 @click.option(
     "--n-jobs",
     default=-1,
@@ -175,7 +187,7 @@ def make_benchmark() -> Benchmark:
                 n_max_evals=100_000,
             ),
         }
-        for pop_size in [10, 20]
+        for pop_size in [10, 20, 50]
     }
 
     return Benchmark(
