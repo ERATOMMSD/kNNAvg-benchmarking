@@ -84,10 +84,6 @@ def get_problems(selector=None):
     return noisy_problems, knn_avg_denoisers, res_avg_denoisers
 
 
-
-def make_old_benchmark(N_RUNS: int = 1, output_dir_path: str = "./out", selector=None) -> nmoo.Benchmark:  # CONFIG
-    pass
-
 def make_benchmark() -> nmoo.Benchmark:  # CONFIG
     N_RUNS: int = 40  # will be overridden
     output_dir_path: str = "./benchmark-results"
@@ -141,7 +137,7 @@ def make_benchmark() -> nmoo.Benchmark:  # CONFIG
     return benchmark
 
 
-def make_other_benchmark() -> nmoo.Benchmark:  # CONFIG
+def make_ar_benchmark() -> nmoo.Benchmark:  # CONFIG
     N_RUNS: int = 40  # will be overridden
     output_dir_path: str = "./AR-results"
     selector = "all"
@@ -236,7 +232,3 @@ def make_gpss_benchmark() -> nmoo.Benchmark:  # CONFIG
             performance_indicators=["df", "ghv", "gigd"]
         )
     return benchmark
-
-
-if __name__ == "__main__":
-    nmoo.plot_performance_indicators(make_benchmark(), row="algorithm")
