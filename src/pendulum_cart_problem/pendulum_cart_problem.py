@@ -12,7 +12,8 @@ import numpy as np
 
 sys.path.append(str(Path(__file__).absolute().parent) + "/")
 
-from pcsim import pcsim
+from pcsim_old import pcsim
+from loguru import logger as logging
 
 
 class PendulumCartProblem(Problem):
@@ -59,6 +60,8 @@ class PendulumCartProblem(Problem):
 
     def _evaluate(self, x, out, *args, **kwargs):
         def _run(y: List[np.ndarray]) -> np.ndarray:
+            logging.debug("_run batch")
+
             results = [
                 pcsim(
                     self._noise_coefficient,
@@ -72,6 +75,7 @@ class PendulumCartProblem(Problem):
         batches = np.array_split(x, ceil(len(x) / self._batch_size))
         jobs = [delayed(_run)(b) for b in batches]
         executor = Parallel(n_jobs=self._n_workers)
+        logging.debug(f"About to trigger {len(jobs)} batches")
         results = executor(jobs)
         out["F"] = np.concatenate(results, axis=0)
 

@@ -13,18 +13,19 @@ from pymoo.config import Config
 Config.show_compile_hint = False
 
 C_REGION_SIMULATOR_PATH = (
-    Path(__file__).absolute().parent
+    Path(__file__).absolute().parent / "src"
     / "c_region_simulator_problem"
     / "c_region_simulator_with_pipe"
 )
+print(C_REGION_SIMULATOR_PATH)
 
-performance_indicators = ["df", "hv", "igd", "rghv", "rgigd"]
+performance_indicators = ["dfp", "rghv", "rgigd"]
 
 def make_benchmark() -> nmoo.Benchmark:
     """Defines the benchmark"""
     # The noisy problems and their names
     noisy_problems: dict[str, nmoo.WrappedProblem] = {
-        "crs_8": make_c_region_simulator(8),
+        # "crs_8": make_c_region_simulator(8),
         "crs_8_1000": make_c_region_simulator(8, 1000),
         "pd_5": make_pendulum_cart(5),
     }
@@ -86,7 +87,7 @@ def make_benchmark() -> nmoo.Benchmark:
         n_runs=30,
         seeds=list(np.arange(100, 10000, 100)),
         max_retry=10,
-        performance_indicators=["df", "rghv", "rgigd"]
+        performance_indicators=["dfp", "rghv", "rgigd"]
     )
 
 
@@ -138,7 +139,7 @@ def make_ar_benchmark() -> nmoo.Benchmark:
         max_retry=10,
         n_runs=30,
         seeds=list(np.arange(100, 10000, 100)),
-        performance_indicators=["df", "rghv", "rgigd"]
+        performance_indicators=["dfp", "rghv", "rgigd"]
     )
 
 

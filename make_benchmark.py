@@ -25,6 +25,9 @@ all_problem_labels = [
     *problem_label_sets["sympart"],
     *problem_label_sets["other"],
 ]
+print(all_problem_labels)
+
+performance_indicators = ["dfp", "ghv", "gigd"]
 
 def get_problems(selector=None):
     ###############
@@ -132,7 +135,7 @@ def make_benchmark() -> nmoo.Benchmark:  # CONFIG
             n_runs=N_RUNS,
             seeds=list(np.arange(100, 10000, 100)),
             max_retry=3,
-            performance_indicators=["df", "ghv", "gigd"]
+            performance_indicators=performance_indicators
         )
     return benchmark
 
@@ -177,8 +180,9 @@ def make_ar_benchmark() -> nmoo.Benchmark:  # CONFIG
             n_runs=N_RUNS,
             seeds=list(np.arange(100, 10000, 100)),
             max_retry=3,
-            performance_indicators=["df", "ghv", "gigd"]
+            performance_indicators=performance_indicators
         )
+
     return benchmark
 
 
@@ -229,6 +233,6 @@ def make_gpss_benchmark() -> nmoo.Benchmark:  # CONFIG
             n_runs=N_RUNS,
             seeds=list(np.arange(100, 10000, 100)),
             max_retry=3,
-            performance_indicators=["df", "ghv", "gigd"]
+            performance_indicators=performance_indicators
         )
     return benchmark

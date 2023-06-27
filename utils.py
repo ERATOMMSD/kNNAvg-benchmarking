@@ -21,6 +21,8 @@ def get_pareto_front(problem: nmoo.WrappedProblem) -> array:
         pareto_front = problem.ground_problem().pareto_front(ref_dirs)
     else:
         pareto_front = problem.ground_problem().pareto_front()
+    if pareto_front is None:
+        import pdb; pdb.set_trace()
     return pareto_front
 
 
