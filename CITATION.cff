@@ -1,0 +1,36 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Klikovits
+    given-names: Stefan
+    orcid: https://orcid.org/0000-0003-4212-7029
+  - family-names: Ho Thanh
+    given-names: Cédric
+    orcid: https://orcid.org/0000-0003-4476-2034
+  - family-names: Cetinkaya
+    given-names: Ahmet
+    orcid: https://orcid.org/0000-0002-1731-8600
+  - family-names: Arcaini
+    given-names: Paolo
+    orcid: https://orcid.org/0000-0002-6253-4062
+title: "Trust Your Neighbours: Handling Noise in Multi-Objective Optimisation Using kNN-Averaging"
+type: article
+version: "JSS-1.0"
+date-released: 2023-06-27
+preferred-citation:
+  type: article
+  authors:
+  - family-names: Klikovits
+    given-names: Stefan
+    orcid: https://orcid.org/0000-0003-4212-7029
+  - family-names: Ho Thanh
+    given-names: Cédric
+    orcid: https://orcid.org/0000-0003-4476-2034
+  - family-names: Cetinkaya
+    given-names: Ahmet
+    orcid: https://orcid.org/0000-0002-1731-8600
+  - family-names: Arcaini
+    given-names: Paolo
+    orcid: https://orcid.org/0000-0002-6253-4062
+  journal: "Applied Soft Computing"
+  year: 2023
